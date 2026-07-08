@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stars Unifier • natkor90-blip</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --accent: #14b8a6;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
+            font-weight: 600;
+        }
+
+        .repo-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .repo-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+        }
+
+        .section-header {
+            font-size: 1.25rem;
+            letter-spacing: -.04em;
+        }
+
+        .star-count {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .category-pill {
+            transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .category-pill:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+        
+        .category-pill.active {
+            background-color: #14b8a6;
+            color: white;
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.3);
+        }
+
+        .modal {
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #14b8a6, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-200">
+    <!-- Top Navigation -->
+    <nav class="border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-screen-2xl mx-auto">
+            <div class="px-8 py-5 flex items-center justify-between">
+                <div class="flex items-center gap-x-4">
+                    <!-- NEW LOGO -->
+                    <div class="w-10 h-10 bg-gradient-to-br from-teal-400 via-cyan-400 to-sky-500 rounded-3xl flex items-center justify-center shadow-lg shadow-teal-500/40 relative">
+                        <i class="fa-solid fa-star text-white text-3xl"></i>
+                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-sparkles text-[10px] text-zinc-900"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="font-display text-3xl font-semibold tracking-tighter">Stars Unifier</span>
+                        <span class="text-zinc-500 text-2xl mx-1">•</span>
+                        <span class="font-medium text-zinc-400">natkor90-blip</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-x-3">
+                    <div class="hidden md:flex items-center bg-zinc-900 border border-teal-900 rounded-3xl px-4 py-1.5 text-sm">
+                        <div class="flex items-center text-teal-400">
+                            <i class="fa-solid fa-circle fa-beat mr-2 text-xs"></i>
+                            <span class="font-medium">Live • GitHub Stars</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="refreshData()" 
+                            class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-teal-500 transition-all rounded-3xl">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span class="hidden sm:inline">Refresh</span>
+                    </button>
+                    
+                    <button onclick="exportData()" 
+                            class="flex items-center gap-x-2 px-6 py-2.5 text-sm font-semibold bg-white text-zinc-950 hover:bg-teal-100 transition-all rounded-3xl">
+                        <i class="fa-solid fa-download"></i>
+                        <span class="hidden sm:inline">Export</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Rest of the page remains the same -->
+    <div class="max-w-screen-2xl mx-auto px-8 pt-10 pb-8">
+        <!-- Hero -->
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-12">
+            <div class="max-w-xl">
+                <h1 class="font-display text-6xl lg:text-7xl font-semibold tracking-tighter leading-none">
+                    Your Stars,<br>
+                    <span class="gradient-text">Unified.</span>
+                </h1>
+                <p class="mt-5 text-xl text-zinc-400">
+                    Automatically organized • Always up to date • Built for your AI journey
+                </p>
+            </div>
+            
+            <div class="flex flex-col items-start lg:items-end gap-2 text-sm">
+                <div class="flex items-center gap-2 text-teal-400">
+                    <i class="fa-solid fa-satellite-dish fa-fw"></i>
+                    <span id="synced-text" class="font-medium">Synced with GitHub • — stars</span>
+                </div>
+                <div class="text-zinc-500 font-mono">
+                    Last synced: <span id="last-sync-time" class="text-teal-300">just now</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats, Categories, Grid etc. (same as before) -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+            <div class="bg-zinc-900 border border-teal-900/50 rounded-3xl p-6 hover:border-teal-500/50 transition-colors group">
+                <div class="flex items-baseline gap-2">
+                    <span id="stat-total" class="text-6xl font-semibold stat-value text-teal-300">—</span>
+                </div>
+                <div class="text-zinc-400 mt-3 flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-star text-amber-400"></i>
+                    <span class="font-medium">Total Stars</span>
+                </div>
+            </div>
+            
+            <div class="bg-zinc-900 border border-teal-900/50 rounded-3xl p-6 hover:border-teal-500/50 transition-colors group">
+                <div class="flex items-baseline gap-2">
+                    <span id="stat-categories" class="text-6xl font-semibold stat-value text-teal-300">—</span>
+                </div>
+                <div class="text-zinc-400 mt-3 flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span class="font-medium">Categories</span>
+                </div>
+            </div>
+            
+            <div class="bg-zinc-900 border border-teal-900/50 rounded-3xl p-6 hover:border-teal-500/50 transition-colors group">
+                <div class="flex items-baseline gap-2">
+                    <span id="stat-toplang" class="text-6xl font-semibold stat-value text-teal-300">—</span>
+                </div>
+                <div class="text-zinc-400 mt-3 flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-code"></i>
+                    <span class="font-medium">Top Language</span>
+                </div>
+            </div>
+            
+            <div class="bg-zinc-900 border border-teal-900/50 rounded-3xl p-6 hover:border-teal-500/50 transition-colors group">
+                <div class="flex items-baseline gap-2">
+                    <span id="stat-ai" class="text-6xl font-semibold stat-value text-teal-300">—</span>
+                </div>
+                <div class="text-zinc-400 mt-3 flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-robot"></i>
+                    <span class="font-medium">AI Related</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-10">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="section-header font-semibold tracking-tight flex items-center gap-2">
+                    <span>Insights • Categories</span>
+                </h2>
+                <button onclick="clearCategoryFilter()" 
+                        class="text-xs px-4 py-2 text-zinc-400 hover:text-white flex items-center gap-2 hover:bg-zinc-900 rounded-3xl transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                    <span>Clear filters</span>
+                </button>
+            </div>
+            <div id="category-pills" class="flex flex-wrap gap-3"></div>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-y-4 mb-6">
+            <div>
+                <h2 class="section-header font-semibold tracking-tight flex items-center gap-3">
+                    REPOSITORIES 
+                    <span id="repo-count" class="text-base font-normal text-zinc-500">(loading...)</span>
+                </h2>
+                <p class="text-sm text-zinc-400">Click any card for details • Semantic search enabled</p>
+            </div>
+            
+            <div class="flex gap-2 w-full md:w-auto md:min-w-[420px]">
+                <div class="relative flex-1">
+                    <div class="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <input id="search-input" 
+                           type="text" 
+                           placeholder="Search: RAG, agents, trading, n8n..."
+                           class="w-full bg-zinc-900 border border-zinc-700 focus:border-teal-500 pl-12 pr-5 py-4 text-sm rounded-3xl outline-none"
+                           onkeyup="if (event.key === 'Enter') filterRepos()">
+                </div>
+                <button onclick="filterRepos()" 
+                        class="px-10 font-semibold bg-teal-600 hover:bg-teal-500 active:bg-teal-700 transition-all text-white rounded-3xl text-sm">
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <div id="repo-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        
+        <div id="no-results" class="hidden text-center py-20">
+            <i class="fa-solid fa-magnifying-glass text-5xl text-zinc-700 mb-6"></i>
+            <p class="text-xl text-zinc-400">No matching repositories found</p>
+            <button onclick="clearFilters()" class="mt-6 px-6 py-3 text-teal-400 hover:text-teal-300 border border-teal-900 rounded-3xl">Clear all</button>
+        </div>
+    </div>
+
+    <!-- Modal (same as previous version) -->
+    <div id="modal" onclick="if (event.target.id === 'modal') closeModal()" 
+         class="hidden fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex items-center justify-center p-4">
+        <div onclick="event.stopImmediatePropagation()" 
+             class="bg-zinc-900 border border-teal-900 w-full max-w-2xl rounded-3xl overflow-hidden modal">
+            <div class="px-8 pt-8 pb-5 flex justify-between items-start border-b border-zinc-800">
+                <div id="modal-header-content" class="flex-1"></div>
+                <button onclick="closeModal()" class="text-zinc-400 hover:text-teal-300 p-2">
+                    <i class="fa-solid fa-xmark text-3xl"></i>
+                </button>
+            </div>
+            <div class="p-8 space-y-8 text-sm" id="modal-body"></div>
+            <div class="px-8 py-6 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between">
+                <div class="text-xs text-zinc-500">Synced from GitHub</div>
+                <button onclick="openGitHubFromModal()" 
+                        class="flex items-center gap-x-3 px-6 py-3 text-sm font-medium bg-zinc-800 hover:bg-zinc-700 rounded-3xl transition-colors">
+                    <i class="fa-brands fa-github"></i>
+                    <span>View on GitHub</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // (The full JavaScript from the previous English version - unchanged)
+        let repos = [];
+
+        function categorizeRepo(repo) {
+            const text = `${repo.name} ${repo.description || ''} ${repo.language || ''}`.toLowerCase();
+            if (text.includes('rag') || text.includes('semantic') || text.includes('vector') || text.includes('embedding')) return "RAG & Semantic Search";
+            if (text.includes('trading') || text.includes('finance') || text.includes('kronos') || text.includes('alice')) return "AI Finance & Trading";
+            if (text.includes('n8n') || text.includes('automation') || text.includes('workflow')) return "Automation & Workflows";
+            if (text.includes('agent') || text.includes('claude') || text.includes('aider')) return "AI Agents & Assistants";
+            if (text.includes('llm') || text.includes('prompt') || text.includes('groq')) return "LLM Tools";
+            if (text.includes('audio') || text.includes('sound')) return "Audio AI";
+            if (text.includes('ml') || text.includes('course') || text.includes('tutorial')) return "Learning & Tutorials";
+            return "Other";
+        }
+
+        async function fetchGitHubStars() {
+            const grid = document.getElementById('repo-grid');
+            grid.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-24 text-zinc-400">
+                <i class="fa-solid fa-spinner fa-spin text-5xl mb-6"></i>
+                <p class="text-lg">Loading stars from GitHub...</p>
+            </div>`;
+
+            try {
+                let allRepos = [];
+                let page = 1;
+                const perPage = 100;
+
+                while (true) {
+                    const res = await fetch(`https://api.github.com/users/natkor90-blip/starred?per_page=${perPage}&page=${page}`);
+                    if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+                    const data = await res.json();
+                    if (data.length === 0) break;
+                    allRepos = allRepos.concat(data);
+                    if (data.length < perPage) break;
+                    page++;
+                }
+
+                repos = allRepos.map((item, index) => ({
+                    id: index + 1,
+                    name: item.name,
+                    owner: item.owner.login,
+                    stars: item.stargazers_count,
+                    description: item.description || "No description provided.",
+                    category: categorizeRepo(item),
+                    language: item.language || "Unknown",
+                    date: new Date(item.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                    github: item.html_url
+                }));
+
+                updateStats(allRepos);
+                return repos;
+            } catch (error) {
+                console.error(error);
+                document.getElementById('repo-grid').innerHTML = `<div class="col-span-full text-center py-20 text-red-400">
+                    <i class="fa-solid fa-triangle-exclamation text-4xl mb-4"></i>
+                    <p>Failed to load data. Please try again later.</p>
+                </div>`;
+                return [];
+            }
+        }
+
+        function updateStats(allRepos) {
+            if (!allRepos.length) return;
+            document.getElementById('stat-total').textContent = allRepos.length;
+            document.getElementById('synced-text').innerHTML = `Synced with GitHub • <span class="font-mono">${allRepos.length}</span> stars`;
+
+            const categories = new Set(allRepos.map(r => categorizeRepo(r)));
+            document.getElementById('stat-categories').textContent = categories.size;
+
+            const langCount = {};
+            allRepos.forEach(r => langCount[r.language || 'N/A'] = (langCount[r.language || 'N/A'] || 0) + 1);
+            let topLang = Object.keys(langCount).sort((a,b) => langCount[b] - langCount[a])[0] || 'N/A';
+            document.getElementById('stat-toplang').textContent = topLang;
+
+            let aiCount = allRepos.filter(r => ["RAG & Semantic Search", "AI Finance & Trading", "AI Agents & Assistants", "LLM Tools"].includes(r.category)).length;
+            document.getElementById('stat-ai').textContent = aiCount;
+        }
+
+        const categoryColors = {
+            "RAG & Semantic Search": "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+            "AI Finance & Trading": "bg-amber-500/10 text-amber-400 border-amber-500/30",
+            "Automation & Workflows": "bg-sky-500/10 text-sky-400 border-sky-500/30",
+            "AI Agents & Assistants": "bg-violet-500/10 text-violet-400 border-violet-500/30",
+            "LLM Tools": "bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/30",
+            "Audio AI": "bg-pink-500/10 text-pink-400 border-pink-500/30",
+            "Learning & Tutorials": "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",
+            "Other": "bg-zinc-700/50 text-zinc-300 border-zinc-600"
+        };
+
+        function getCategoryClass(cat) {
+            return categoryColors[cat] || categoryColors["Other"];
+        }
+
+        function renderCategoryPills() {
+            const container = document.getElementById('category-pills');
+            container.innerHTML = '';
+            const counts = {};
+            repos.forEach(repo => counts[repo.category] = (counts[repo.category] || 0) + 1);
+
+            Object.keys(counts).sort((a, b) => counts[b] - counts[a]).forEach(category => {
+                const pill = document.createElement('div');
+                const isActive = currentFilter.category === category;
+                pill.className = `category-pill inline-flex items-center gap-2 px-5 py-2 text-sm font-medium border rounded-3xl ${getCategoryClass(category)} ${isActive ? 'active' : ''}`;
+                pill.innerHTML = `${category} <span class="px-2.5 py-0.5 text-xs font-mono bg-black/40 rounded-2xl">${counts[category]}</span>`;
+                pill.onclick = () => {
+                    currentFilter.category = currentFilter.category === category ? null : category;
+                    filterRepos();
+                    renderCategoryPills();
+                };
+                container.appendChild(pill);
+            });
+        }
+
+        function renderRepos(reposToShow) {
+            const grid = document.getElementById('repo-grid');
+            const noResults = document.getElementById('no-results');
+            grid.innerHTML = '';
+
+            document.getElementById('repo-count').textContent = `(${reposToShow.length} / ${repos.length})`;
+
+            if (reposToShow.length === 0) {
+                grid.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            grid.classList.remove('hidden');
+            noResults.classList.add('hidden');
+
+            reposToShow.forEach(repo => {
+                const card = document.createElement('div');
+                card.className = `repo-card bg-zinc-900 border border-zinc-800 hover:border-teal-500 rounded-3xl p-6 flex flex-col cursor-pointer group`;
+                card.innerHTML = `
+                    <div class="flex justify-between mb-4">
+                        <div class="font-semibold text-xl tracking-tight group-hover:text-teal-400 transition-colors">${repo.name}</div>
+                        <div class="flex items-center text-amber-400 text-sm font-medium">
+                            <i class="fa-solid fa-star mr-1"></i>${repo.stars}
+                        </div>
+                    </div>
+                    <p class="text-zinc-400 line-clamp-3 flex-1 mb-6">${repo.description}</p>
+                    <div class="flex flex-wrap gap-2 mt-auto">
+                        <div class="px-4 py-1 text-xs font-medium rounded-3xl border ${getCategoryClass(repo.category)}">${repo.category}</div>
+                        <div class="px-4 py-1 text-xs bg-zinc-800 text-zinc-400 rounded-3xl font-mono">${repo.language}</div>
+                        <div class="ml-auto text-xs text-zinc-500 font-mono self-end">${repo.date}</div>
+                    </div>
+                `;
+                card.onclick = () => openModal(repo);
+                grid.appendChild(card);
+            });
+        }
+
+        let currentFilter = { search: '', category: null };
+        let currentModalRepo = null;
+
+        function filterRepos() {
+            const searchInput = document.getElementById('search-input').value.toLowerCase().trim();
+            currentFilter.search = searchInput;
+            let filtered = repos;
+
+            if (currentFilter.category) filtered = filtered.filter(r => r.category === currentFilter.category);
+            if (searchInput) {
+                filtered = filtered.filter(repo => {
+                    const haystack = `${repo.name} ${repo.description} ${repo.category} ${repo.language}`.toLowerCase();
+                    return searchInput.split(' ').every(word => haystack.includes(word));
+                });
+            }
+            renderRepos(filtered);
+        }
+
+        function clearCategoryFilter() {
+            currentFilter.category = null;
+            filterRepos();
+            renderCategoryPills();
+        }
+
+        function clearFilters() {
+            currentFilter = { search: '', category: null };
+            document.getElementById('search-input').value = '';
+            filterRepos();
+            renderCategoryPills();
+        }
+
+        function openModal(repo) {
+            currentModalRepo = repo;
+            const modal = document.getElementById('modal');
+            const header = document.getElementById('modal-header-content');
+            const body = document.getElementById('modal-body');
+
+            header.innerHTML = `
+                <div class="font-display text-4xl font-semibold tracking-tighter">${repo.name}</div>
+                <a href="${repo.github}" target="_blank" class="text-teal-400 hover:text-teal-300 inline-flex items-center gap-2 mt-1 text-sm">
+                    <i class="fa-brands fa-github"></i> natkor90-blip/${repo.name}
+                </a>
+            `;
+
+            body.innerHTML = `
+                <div class="flex flex-wrap gap-3">
+                    <div class="px-5 py-2 text-sm border ${getCategoryClass(repo.category)} rounded-3xl">${repo.category}</div>
+                    <div class="px-5 py-2 text-sm bg-zinc-800 rounded-3xl">${repo.language}</div>
+                    <div class="px-5 py-2 text-sm text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-star"></i> ${repo.stars} stars
+                    </div>
+                </div>
+                <div><p class="text-zinc-300 leading-relaxed">${repo.description}</p></div>
+                <div class="pt-6 border-t border-zinc-800 text-sm text-zinc-400">Last updated: ${repo.date}</div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function openGitHubFromModal() {
+            if (currentModalRepo) window.open(currentModalRepo.github, '_blank');
+        }
+
+        async function refreshData() {
+            await fetchGitHubStars();
+            renderRepos(repos);
+            renderCategoryPills();
+            document.getElementById('last-sync-time').textContent = 'just now';
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(repos, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            const link = document.createElement('a');
+            link.href = dataUri;
+            link.download = `stars-unifier-natkor90-blip-${new Date().toISOString().slice(0,10)}.json`;
+            link.click();
+        }
+
+        async function initializeApp() {
+            await fetchGitHubStars();
+            renderRepos(repos);
+            renderCategoryPills();
+            document.getElementById('repo-count').textContent = `(${repos.length})`;
+        }
+
+        window.onload = initializeApp;
+    </script>
+</body>
+</html>
